@@ -53,13 +53,14 @@ CEReportxxApp::CEReportxxApp()
 
 CEReportxxApp theApp;
 
+extern void init();
 
 // CEReportxxApp 初始化
 
 BOOL CEReportxxApp::InitInstance()
 {
 	CWinApp::InitInstance();
-	DPLS_INIT_LOADALLPORT();
+	init();
 
 	return TRUE;
 }

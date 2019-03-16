@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "mpq_api.h"
 
-void *Api_OutPut_Func_Pointer; //声明全局的函数指针
+void *Api_Func_Pointers[1]; //声明全局的函数指针数组
 
 int Api_OutPut(char * content)
 {
-	return ((int(__stdcall *)(char *))Api_OutPut_Func_Pointer)(content);
+	return ((int(__stdcall *)(char *))Api_Func_Pointers[0])(content);
 }
 
 void DPLS_INIT_LOADALLPORT()
@@ -17,8 +17,8 @@ void DPLS_INIT_LOADALLPORT()
 		MessageBox(0, "加载Message.DLL失败！", "错误：", 0);
 		return;
 	}
-	Api_OutPut_Func_Pointer = GetProcAddress(hel, "Api_OutPut");
-	if (Api_OutPut_Func_Pointer == NULL)
+	Api_Func_Pointers[0] = GetProcAddress(hel, "Api_OutPut");
+	if (Api_Func_Pointers[0] == NULL)
 	{
 		MessageBox(0, "获取Api_OutPut函数地址失败！", "错误：", 0);
 		return;

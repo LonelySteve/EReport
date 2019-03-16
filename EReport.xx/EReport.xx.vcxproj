@@ -138,13 +138,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILDING_LIBCURL;WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\Library\rapidjson\rapidjson\include;D:\Library\Curl\libcurl-vc15-x86-release-static-ipv6-sspi-winssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\EReport.xx.def</ModuleDefinitionFile>
+      <AdditionalLibraryDirectories>D:\Library\Curl\libcurl-vc15-x86-release-static-ipv6-sspi-winssl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libcurl_a.lib;ws2_32.lib;crypt32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;libcd.lib;libcmtd.lib;msvcrtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -183,7 +187,11 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="base64.cpp" />
     <ClCompile Include="EReport.xx.cpp" />
+    <ClCompile Include="mpq_api.cpp" />
+    <ClCompile Include="network.cpp" />
+    <ClCompile Include="ports.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -196,7 +204,11 @@
     <None Include="res\EReport.xx.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="base64.h" />
     <ClInclude Include="EReport.xx.h" />
+    <ClInclude Include="mpq_api.h" />
+    <ClInclude Include="network.h" />
+    <ClInclude Include="ports.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

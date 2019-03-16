@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "EReport.xx.h"
+#include "mpq_api.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,6 +59,7 @@ CEReportxxApp theApp;
 BOOL CEReportxxApp::InitInstance()
 {
 	CWinApp::InitInstance();
+	DPLS_INIT_LOADALLPORT();
 
 	return TRUE;
 }

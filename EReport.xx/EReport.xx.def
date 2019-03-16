@@ -1,6 +1,12 @@
 ﻿; EReport.xx.def: 声明 DLL 的模块参数。
 
-LIBRARY
+LIBRARY EReport.xx
 
 EXPORTS
-    ; 此处可以是显式导出
+
+set @1
+about @2
+info @3
+end @4
+Message @5
+EventFun @6

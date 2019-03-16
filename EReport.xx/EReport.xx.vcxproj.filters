@@ -21,6 +21,18 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="base64.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mpq_api.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="network.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ports.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="EReport.xx.def">
@@ -41,6 +53,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="EReport.xx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="base64.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mpq_api.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="network.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ports.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,16 +11,16 @@ int Api_OutPut(char * content)
 void DPLS_INIT_LOADALLPORT()
 {
 	HMODULE hel = NULL;
-	hel = LoadLibrary(L"Message.DLL");
+	hel = LoadLibrary("Message.DLL");
 	if (hel == NULL)
 	{
-		MessageBox(0, L"加载Message.DLL失败！", L"错误：", 0);
+		MessageBox(0, "加载Message.DLL失败！", "错误：", 0);
 		return;
 	}
 	Api_OutPut_Func_Pointer = GetProcAddress(hel, "Api_OutPut");
 	if (Api_OutPut_Func_Pointer == NULL)
 	{
-		MessageBox(0, L"获取Api_OutPut函数地址失败！", L"错误：", 0);
+		MessageBox(0, "获取Api_OutPut函数地址失败！", "错误：", 0);
 		return;
 	}
 }

@@ -37,7 +37,7 @@ dllexp void __stdcall set()
 
 dllexp void __stdcall about()
 {
-	MessageBox(0, L"事件转发上报插件@JLoeve，参考了mypcqq c++ sdk的实现", L"提示", 0);
+	MessageBox(0, "事件转发上报插件@JLoeve，参考了mypcqq c++ sdk的实现", "提示", 0);
 }
 
 dllexp const char * __stdcall info()

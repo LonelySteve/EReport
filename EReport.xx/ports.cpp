@@ -146,7 +146,7 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 				{
 					Log(CString("解析转发地址响应的Json文本失败！"), ERR);
 				}
-				if (document["Ret"].IsNumber() && document["Ret"].IsInt())
+				else if (document["Ret"].IsNumber() && document["Ret"].IsInt())
 				{
 					auto ret_val = document["Ret"].GetInt();
 					if (document.HasMember("Msg") && document["Msg"].IsString())

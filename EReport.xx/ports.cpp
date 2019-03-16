@@ -151,7 +151,7 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 					auto ret_val = document["Ret"].GetInt();
 					if (document.HasMember("Msg") && document["Msg"].IsString())
 					{
-						memcpy_s(msg, document["Msg"].GetStringLength(), document["Msg"].GetString(), strlen(msg));
+						memcpy_s(backptr, strlen(backptr), document["Msg"].GetString(), document["Msg"].GetStringLength());
 					}
 					Log(CString("OK!"));
 					return ret_val;

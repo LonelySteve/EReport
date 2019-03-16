@@ -192,6 +192,7 @@
     <ClCompile Include="mpq_api.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="ports.cpp" />
+    <ClCompile Include="SettingDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -210,6 +211,7 @@
     <ClInclude Include="network.h" />
     <ClInclude Include="ports.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SettingDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

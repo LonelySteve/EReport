@@ -3,10 +3,16 @@
 #include "mpq_api.h"
 #include "base64.h"
 #include "ports.h"
+#include "SettingDlg.h"
 #include <curl/curl.h>
 #include <rapidjson/document.h>
 
+#define MAX_PATHLENGTH 255
+
 using namespace rapidjson;
+
+CString tran_address;
+BOOL enable_status;
 
 void init()
 {
@@ -20,7 +26,13 @@ void init()
 
 dllexp void __stdcall set()
 {
-	MessageBox(0, L"暂时没有设置", L"提示", 0);
+	SettingDlg dlg;
+
+	dlg.m_tran_address = tran_address;
+	dlg.m_enable_tran = enable_status;
+	dlg.DoModal();
+	tran_address = dlg.m_tran_address;
+	enable_status = dlg.m_enable_tran;
 }
 
 dllexp void __stdcall about()
@@ -35,9 +47,14 @@ dllexp const char * __stdcall info()
 
 dllexp int __stdcall end()
 {
+	// 写入配置
+	WritePrivateProfileString("EReport", "address", tran_address.GetString(), ".\\Set.ini");
+	WritePrivateProfileString("EReport", "enable", enable_status ? "1" : "0", ".\\Set.ini");
 	// 释放curl全局资源
 	curl_global_cleanup();
 	Api_OutPut((char*)"已卸载事件上报插件！");
+	// 释放设置项资源
+	tran_address.ReleaseBuffer();
 	// 返回非0成功 亦可不返回或为空
 	return 1;
 }
@@ -57,89 +74,98 @@ dllexp int __stdcall end()
 */
 dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsource, char *dop, char *bep, char *msg, char *rawmsg, char *backptr)
 {
-	CURL *curl = nullptr;
-	Document document;
-	curl = curl_easy_init();
-	if (curl != nullptr)
+	Api_OutPut("转发事件...");  // This one has magic, Don't Touch it!
+	if (enable_status)
 	{
-		struct MemoryStruct chunk;
-
-		chunk.memory = (char*)malloc(1);  /* will be grown as needed by the realloc above */
-		chunk.size = 0;    /* no data at this point */
-
-		struct curl_slist *header_chunk = NULL;
-		// 使用 POST 提交表单
-		curl_easy_setopt(curl, CURLOPT_POST, 1L);
-		header_chunk = curl_slist_append(header_chunk, "Content-Type: application/x-www-form-urlencoded");
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_chunk);
-		curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:8050");	// TODO 提供外部设置转发地址的功能
-		/* example.com is redirected, so we tell libcurl to follow redirection */
-		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-		/* set Referer: automatically when following redirects */
-		curl_easy_setopt(curl, CURLOPT_AUTOREFERER, 1L);
-
-		long data_length = strlen(qq) + strlen(msgsource) + strlen(dop) + strlen(bep) + strlen(msg) + strlen(rawmsg) + 1000;
-		char * buffer = new char[data_length];
-		sprintf_s(buffer, data_length, "qq=%s&msgtype=%d&msgctype=%d&msgsource=%s&dop=%s&bep=%s&msg=%s&rawmsg=%s",
-			UrlEncode(qq).c_str(),
-			msgtype,
-			msgctype,
-			UrlEncode(msgsource).c_str(),
-			UrlEncode(dop).c_str(),
-			UrlEncode(bep).c_str(),
-			UrlEncode(base64_encode((const unsigned char *)msg, strlen(msg))).c_str(),
-			UrlEncode(base64_encode((const unsigned char *)rawmsg, strlen(rawmsg))).c_str()
-		);
-
-		/* size of the POST data */
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(buffer));
-		/* pass in a pointer to the data - libcurl will not copy */
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buffer);
-		/* Perform the request, res will get the return code */
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-		/* we pass our 'chunk' struct to the callback function */
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-		/* get it! */
-		auto res = curl_easy_perform(curl);
-		/* Check for errors */
-		if (res != CURLE_OK)
+		CURL *curl = nullptr;
+		Document document;
+		curl = curl_easy_init();
+		if (curl != nullptr)
 		{
-			const char* err_msg = curl_easy_strerror(res);
-			long buf_len = strlen(err_msg) + 50;
-			char * buf = new char[buf_len];
-			sprintf_s(buf, buf_len, "转发地址响应出错！出错信息：%s", err_msg);
-			Api_OutPut(buf);
-			delete buf;
-		}
-		else
-		{
-			/*
-			 * Now, our chunk.memory points to a memory block that is chunk.size
-			 * bytes big and contains the remote file.
-			 *
-			 * Do something nice with it!
-			 */
+			struct MemoryStruct chunk;
 
-			if (document.ParseInsitu(chunk.memory).HasParseError())
-				Api_OutPut((char*)"解析转发地址响应的Json文本失败！");
+			chunk.memory = (char*)malloc(1);  /* will be grown as needed by the realloc above */
+			chunk.size = 0;    /* no data at this point */
 
-			if (document["Ret"].IsNumber() && document["Ret"].IsInt())
+			struct curl_slist *header_chunk = NULL;
+			// 使用 POST 提交表单
+			curl_easy_setopt(curl, CURLOPT_POST, 1L);
+			header_chunk = curl_slist_append(header_chunk, "Content-Type: application/x-www-form-urlencoded");
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_chunk);
+			curl_easy_setopt(curl, CURLOPT_URL, tran_address.GetString());
+			/* example.com is redirected, so we tell libcurl to follow redirection */
+			curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+			/* set Referer: automatically when following redirects */
+			curl_easy_setopt(curl, CURLOPT_AUTOREFERER, 1L);
+
+			long data_length = strlen(qq) + strlen(msgsource) + strlen(dop) + strlen(bep) + strlen(msg) + strlen(rawmsg) + 1000;
+			char * buffer = new char[data_length];
+			sprintf_s(buffer, data_length, "qq=%s&msgtype=%d&msgctype=%d&msgsource=%s&dop=%s&bep=%s&msg=%s&rawmsg=%s",
+				UrlEncode(qq).c_str(),
+				msgtype,
+				msgctype,
+				UrlEncode(msgsource).c_str(),
+				UrlEncode(dop).c_str(),
+				UrlEncode(bep).c_str(),
+				UrlEncode(base64_encode((const unsigned char *)msg, strlen(msg))).c_str(),
+				UrlEncode(base64_encode((const unsigned char *)rawmsg, strlen(rawmsg))).c_str()
+			);
+
+			/* size of the POST data */
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(buffer));
+			/* pass in a pointer to the data - libcurl will not copy */
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, buffer);
+			/* Perform the request, res will get the return code */
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+			/* we pass our 'chunk' struct to the callback function */
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+			/* get it! */
+			auto res = curl_easy_perform(curl);
+			/* Check for errors */
+			if (res != CURLE_OK)
 			{
-				auto ret_val = document["Ret"].GetInt();
-				if (document.HasMember("Msg") && document["Msg"].IsString())
-				{
-					memcpy_s(msg, document["Msg"].GetStringLength(), document["Msg"].GetString(), strlen(msg));
-				}
-
-				return ret_val;
+				const char* err_msg = curl_easy_strerror(res);
+				long buf_len = strlen(err_msg) + 50;
+				char * buf = new char[buf_len];
+				sprintf_s(buf, buf_len, "转发地址响应出错！出错信息：%s", err_msg);
+				Api_OutPut(buf);
+				delete buf;
 			}
+			else
+			{
+				/*
+				 * Now, our chunk.memory points to a memory block that is chunk.size
+				 * bytes big and contains the remote file.
+				 *
+				 * Do something nice with it!
+				 */
+
+				if (document.ParseInsitu(chunk.memory).HasParseError())
+					Api_OutPut((char*)"解析转发地址响应的Json文本失败！");
+
+				if (document["Ret"].IsNumber() && document["Ret"].IsInt())
+				{
+					auto ret_val = document["Ret"].GetInt();
+					if (document.HasMember("Msg") && document["Msg"].IsString())
+					{
+						memcpy_s(msg, document["Msg"].GetStringLength(), document["Msg"].GetString(), strlen(msg));
+					}
+
+					return ret_val;
+				}
+			}
+			/* always cleanup */
+			curl_easy_cleanup(curl);
+			curl_slist_free_all(header_chunk);
+			free(chunk.memory);
+			delete buffer;
 		}
-		/* always cleanup */
-		curl_easy_cleanup(curl);
-		curl_slist_free_all(header_chunk);
-		free(chunk.memory);
-		delete buffer;
 	}
+	else
+	{
+		Api_OutPut("Warning：没有启用事件上报插件EReport！");
+	}
+
 
 	//返回值-1 已收到信息但拒绝处理
 	//返回0 没有收到信息或不被处理

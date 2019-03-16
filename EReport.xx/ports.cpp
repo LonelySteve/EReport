@@ -4,6 +4,7 @@
 #include "base64.h"
 #include "ports.h"
 #include "SettingDlg.h"
+#include "logging.h"
 #include <curl/curl.h>
 #include <rapidjson/document.h>
 
@@ -52,7 +53,7 @@ dllexp int __stdcall end()
 	WritePrivateProfileString("EReport", "enable", enable_status ? "1" : "0", ".\\Set.ini");
 	// 释放curl全局资源
 	curl_global_cleanup();
-	Api_OutPut((char*)"已卸载事件上报插件！");
+	Log(CString("已卸载事件上报插件！"));
 	// 释放设置项资源
 	tran_address.ReleaseBuffer();
 	// 返回非0成功 亦可不返回或为空
@@ -74,7 +75,10 @@ dllexp int __stdcall end()
 */
 dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsource, char *dop, char *bep, char *msg, char *rawmsg, char *backptr)
 {
-	Api_OutPut("转发事件...");  // This one has magic, Don't Touch it!
+	CString tip_str;
+	tip_str.Format("转发事件至%s", tran_address);
+	Log(tip_str);  // This one has magic, Don't Touch it!
+
 	if (enable_status)
 	{
 		CURL *curl = nullptr;
@@ -125,11 +129,9 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 			if (res != CURLE_OK)
 			{
 				const char* err_msg = curl_easy_strerror(res);
-				long buf_len = strlen(err_msg) + 50;
-				char * buf = new char[buf_len];
-				sprintf_s(buf, buf_len, "转发地址响应出错！出错信息：%s", err_msg);
-				Api_OutPut(buf);
-				delete buf;
+				CString tmp;
+				tmp.Format("转发地址响应出错！出错信息：%s", err_msg);
+				Log(tmp, ERR);
 			}
 			else
 			{
@@ -141,8 +143,9 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 				 */
 
 				if (document.ParseInsitu(chunk.memory).HasParseError())
-					Api_OutPut((char*)"解析转发地址响应的Json文本失败！");
-
+				{
+					Log(CString("解析转发地址响应的Json文本失败！"), ERR);
+				}
 				if (document["Ret"].IsNumber() && document["Ret"].IsInt())
 				{
 					auto ret_val = document["Ret"].GetInt();
@@ -150,8 +153,12 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 					{
 						memcpy_s(msg, document["Msg"].GetStringLength(), document["Msg"].GetString(), strlen(msg));
 					}
-
+					Log(CString("OK!"));
 					return ret_val;
+				}
+				else
+				{
+					Log(CString("没有获取的有效的返回值！"), WARNING);
 				}
 			}
 			/* always cleanup */
@@ -163,7 +170,8 @@ dllexp int __stdcall EventFun(char *qq, int msgtype, int msgctype, char *msgsour
 	}
 	else
 	{
-		Api_OutPut("Warning：没有启用事件上报插件EReport！");
+		Log(CString("没有启用事件上报插件EReport！"), WARNING);
+		return 0;
 	}
 
 
